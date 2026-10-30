@@ -100,5 +100,83 @@ tk.Label(frame_raices, text="f(raíz):").grid(row=3, column=5, sticky="e", padx=
 entry_fraiz = tk.Entry(frame_raices, width=15, state="readonly")
 entry_fraiz.grid(row=3, column=6)
 
+# --- PASO 3: Cálculo de la derivada primera ---
+frame_derivada = tk.LabelFrame(ventana, text="Cálculo de la derivada primera (diferencia centrada)", padx=10, pady=10)
+frame_derivada.pack(fill="x", padx=10, pady=5)
+
+tk.Label(frame_derivada, text="x0:").grid(row=0, column=0, sticky="e")
+entry_dx0 = tk.Entry(frame_derivada, width=10)
+entry_dx0.insert(0, "1")
+entry_dx0.grid(row=0, column=1, padx=5)
+
+tk.Label(frame_derivada, text="dx:").grid(row=0, column=2, sticky="e")
+entry_ddx = tk.Entry(frame_derivada, width=10)
+entry_ddx.insert(0, "0.1")
+entry_ddx.grid(row=0, column=3, padx=5)
+
+tk.Button(frame_derivada, text="Calcular").grid(row=0, column=4, padx=20)
+
+tk.Label(frame_derivada, text="Derivada f'(x0):").grid(row=0, column=5, sticky="e", padx=(40,5))
+entry_dres = tk.Entry(frame_derivada, width=15, state="readonly")
+entry_dres.grid(row=0, column=6)
+
+# --- PASO 3.1: Resolución de sistema (Eliminación de Gauss) ---
+frame_gauss = tk.LabelFrame(ventana, text="Resolución de un sistema de 4 ecuaciones (eliminación gaussiana)", padx=10, pady=10)
+frame_gauss.pack(fill="x", padx=10, pady=5)
+
+# Etiquetas superiores (x1..x4 y b)
+for j in range(4):
+    tk.Label(frame_gauss, text=f"x{j+1}").grid(row=0, column=j)
+tk.Label(frame_gauss, text="b").grid(row=0, column=4, padx=(10,0))
+
+# Variables para guardar las celdas
+entradas_gauss_A = []
+entradas_gauss_b = []
+entradas_gauss_res = []
+
+# Valores predeterminados para la matriz de 4x4 y el vector b
+val_A = [["2", "2", "1", "-1"],
+         ["2", "-2", "6", "-4"],
+         ["2", "2", "1", "1"],
+         ["1", "5", "-4", "-2"]]
+val_b = ["5", "0", "13", "-9"]
+
+# Crear cuadrícula
+for i in range(4):
+    fila = []
+    for j in range(4):
+        ent = tk.Entry(frame_gauss, width=8, justify="center")
+        ent.insert(0, val_A[i][j])
+        ent.grid(row=i+1, column=j, padx=2, pady=2)
+        fila.append(ent)
+    entradas_gauss_A.append(fila)
+    
+    # Vector b
+    ent_b = tk.Entry(frame_gauss, width=8, justify="center")
+    ent_b.insert(0, val_b[i])
+    ent_b.grid(row=i+1, column=4, padx=(15,5), pady=2)
+    entradas_gauss_b.append(ent_b)
+
+# Panel derecho de Gauss (Opciones y Resultados)
+frame_opc_gauss = tk.Frame(frame_gauss)
+frame_opc_gauss.grid(row=1, column=5, rowspan=4, padx=20)
+
+opcion_pivoteo = tk.IntVar(value=0)
+tk.Radiobutton(frame_opc_gauss, text="Sin pivoteo", variable=opcion_pivoteo, value=0).pack(anchor="w")
+tk.Radiobutton(frame_opc_gauss, text="Con pivoteo parcial", variable=opcion_pivoteo, value=1).pack(anchor="w")
+
+tk.Button(frame_opc_gauss, text="Calcular").pack(fill="x", pady=(5,2))
+tk.Button(frame_opc_gauss, text="Borrar").pack(fill="x", pady=2)
+tk.Button(frame_opc_gauss, text="Valores de prueba").pack(fill="x", pady=2)
+
+frame_res_gauss = tk.Frame(frame_gauss)
+frame_res_gauss.grid(row=1, column=6, rowspan=4, padx=10)
+
+for i in range(4):
+    tk.Label(frame_res_gauss, text=f"x{i+1} =").grid(row=i, column=0, sticky="e")
+    ent_res = tk.Entry(frame_res_gauss, width=12, state="readonly")
+    ent_res.grid(row=i, column=1, pady=2, padx=5)
+    entradas_gauss_res.append(ent_res)
+
 # Iniciar el bucle de eventos para mantener la ventana abierta
 ventana.mainloop()
