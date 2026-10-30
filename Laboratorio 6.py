@@ -1,12 +1,11 @@
 # URL del repositorio de GitHub: https://github.com/Fermin555/Laboratorio-6.git
 # Autores: Fermin Delgado, Kevin Ulloa
 
-# URL del repositorio de GitHub: [ACÁ VA EL LINK A TU REPO]
 import tkinter as tk
 import numpy as np
 
 # =========================================================================
-# FUNCIONES MATEMÁTICAS (Tienen que ir arriba para que los botones las vean)
+# FUNCIONES MATEMÁTICAS
 # =========================================================================
 def eval_f(x):
     try:
@@ -129,6 +128,115 @@ def calcular_derivada():
         entry_dres.delete(0, tk.END)
         entry_dres.insert(0, "Error")
         entry_dres.config(state="readonly")
+
+def calcular_gauss():
+    try:
+        N = 4
+        A = np.zeros((N, N))
+        b = np.zeros(N)
+        
+        for i in range(N):
+            for j in range(N):
+                A[i][j] = float(entradas_gauss_A[i][j].get())
+            b[i] = float(entradas_gauss_b[i].get())
+            
+        pivoteo = opcion_pivoteo.get()
+        
+        for entry in entradas_gauss_res:
+            entry.config(state="normal")
+            entry.delete(0, tk.END)
+
+        for q in range(N-1):
+            if pivoteo == 1:
+                p = q
+                for i in range(q+1, N):
+                    if abs(A[i][q]) > abs(A[p][q]):
+                        p = i
+                A[[q, p]] = A[[p, q]]
+                b[[q, p]] = b[[p, q]]
+            
+            if abs(A[q][q]) < 1e-12:
+                entradas_gauss_res[0].insert(0, "Pivote nulo")
+                for entry in entradas_gauss_res:
+                    entry.config(state="readonly")
+                return
+            
+            for k in range(q+1, N):
+                m = A[k][q] / A[q][q]
+                A[k] = A[k] - m * A[q]
+                b[k] = b[k] - m * b[q]
+                
+        if abs(A[N-1][N-1]) < 1e-12:
+            entradas_gauss_res[0].insert(0, "Pivote nulo")
+            for entry in entradas_gauss_res:
+                entry.config(state="readonly")
+            return
+
+        x = np.zeros(N)
+        for i in range(N-1, -1, -1):
+            s = sum(A[i][j] * x[j] for j in range(i+1, N))
+            x[i] = (b[i] - s) / A[i][i]
+            
+        for i in range(N):
+            entradas_gauss_res[i].insert(0, f"{x[i]:.4f}")
+            
+    except ValueError:
+        entradas_gauss_res[0].config(state="normal")
+        entradas_gauss_res[0].insert(0, "Error")
+    finally:
+        for entry in entradas_gauss_res:
+            entry.config(state="readonly")
+
+def borrar_gauss():
+    for i in range(4):
+        for j in range(4):
+            entradas_gauss_A[i][j].delete(0, tk.END)
+        entradas_gauss_b[i].delete(0, tk.END)
+        entradas_gauss_res[i].config(state="normal")
+        entradas_gauss_res[i].delete(0, tk.END)
+        entradas_gauss_res[i].config(state="readonly")
+
+def valores_prueba_gauss():
+    borrar_gauss()
+    val_A = [["2", "2", "1", "-1"], ["2", "-2", "6", "-4"], ["2", "2", "1", "1"], ["1", "5", "-4", "-2"]]
+    val_b = ["5", "0", "13", "-9"]
+    for i in range(4):
+        for j in range(4):
+            entradas_gauss_A[i][j].insert(0, val_A[i][j])
+        entradas_gauss_b[i].insert(0, val_b[i])
+
+def calcular_integral():
+    try:
+        a = float(entry_inta.get())
+        b = float(entry_intb.get())
+        n = int(entry_intn.get())
+        
+        entry_intres.config(state="normal")
+        entry_intres.delete(0, tk.END)
+        
+        if n % 2 != 0 or n <= 0:
+            entry_intres.insert(0, "n debe ser par")
+            entry_intres.config(state="readonly")
+            return
+            
+        h = (b - a) / n
+        suma = eval_f(a) + eval_f(b)
+        
+        for i in range(1, n):
+            x = a + i * h
+            if i % 2 == 0:
+                suma += 2 * eval_f(x)
+            else:
+                suma += 4 * eval_f(x)
+                
+        integral = (h / 3) * suma
+        
+        entry_intres.insert(0, f"{integral:.4f}")
+    except ValueError:
+        entry_intres.config(state="normal")
+        entry_intres.insert(0, "Error")
+    finally:
+        entry_intres.config(state="readonly")
 
 
 # =========================================================================
@@ -274,9 +382,9 @@ opcion_pivoteo = tk.IntVar(value=0)
 tk.Radiobutton(frame_opc_gauss, text="Sin pivoteo", variable=opcion_pivoteo, value=0).pack(anchor="w")
 tk.Radiobutton(frame_opc_gauss, text="Con pivoteo parcial", variable=opcion_pivoteo, value=1).pack(anchor="w")
 
-tk.Button(frame_opc_gauss, text="Calcular").pack(fill="x", pady=(5,2))
-tk.Button(frame_opc_gauss, text="Borrar").pack(fill="x", pady=2)
-tk.Button(frame_opc_gauss, text="Valores de prueba").pack(fill="x", pady=2)
+tk.Button(frame_opc_gauss, text="Calcular", command=calcular_gauss).pack(fill="x", pady=(5,2))
+tk.Button(frame_opc_gauss, text="Borrar", command=borrar_gauss).pack(fill="x", pady=2)
+tk.Button(frame_opc_gauss, text="Valores de prueba", command=valores_prueba_gauss).pack(fill="x", pady=2)
 
 frame_res_gauss = tk.Frame(frame_gauss)
 frame_res_gauss.grid(row=1, column=6, rowspan=4, padx=10)
@@ -301,7 +409,7 @@ entry_intb = tk.Entry(frame_integral, width=8)
 entry_intb.insert(0, "2")
 entry_intb.grid(row=0, column=3, padx=5, sticky="w")
 
-tk.Button(frame_integral, text="Calcular").grid(row=0, column=4, rowspan=2, padx=40)
+tk.Button(frame_integral, text="Calcular", command=calcular_integral).grid(row=0, column=4, rowspan=2, padx=40)
 
 tk.Label(frame_integral, text="Integral definida:").grid(row=0, column=5, rowspan=2, sticky="e", padx=(10,5))
 entry_intres = tk.Entry(frame_integral, width=15, state="readonly")
